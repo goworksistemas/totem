@@ -278,10 +278,12 @@ const AcessoRapido = () => {
         ...visitorAction,
         url: unitFormUrl,
         // Remove qrCodeOnly para permitir escolha entre QR Code e navegador
-        qrCodeOnly: false
+        qrCodeOnly: false,
+        // Remove actionType para que não mostre mais a opção "Selecionar Unidade"
+        actionType: undefined
       };
 
-      console.log("[DEBUG] Unidade selecionada, mostrando opções de acesso:", completeAction);
+      console.log("[DEBUG] Unidade selecionada, mostrando APENAS opções QR Code e Navegador:", completeAction);
       
       // Mostrar modal para usuário escolher: QR Code ou Abrir no navegador
       showOptionSelection(completeAction);

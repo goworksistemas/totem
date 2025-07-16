@@ -297,6 +297,13 @@ Em `src/data/optionsData.ts`:
     - ✅ Logs detalhados para debug
     - ✅ Timeout NÃO inicia mais na tela inicial (só quando usuário navegar)
 
+12. **Fluxo visitantes com seleção de unidade (CORRIGIDO)**
+    - ✅ Corrigido QR Code em branco nas opções "Vim fazer reunião" e "Visitar empresa"
+    - ✅ Fluxo correto: clique → seleção unidade → modal escolha (QR/navegador)
+    - ✅ URLs sempre válidas quando QR Code é mostrado
+    - ✅ Modal só mostra opções se URL estiver preenchida
+    - ✅ Experiência de usuário mais lógica e intuitiva
+
 ### Debug Mode
 
 ```typescript
