@@ -244,6 +244,11 @@ Em `src/data/optionsData.ts`:
    - Testar biblioteca react-qr-code
    - Confirmar dados das opções
 
+4. **Erro no build/deploy Netlify (TS6305)**
+   - Certificar que `vite.config.ts` não está no `include` do `tsconfig.json`
+   - Usar apenas `vite build` no script de build
+   - Configuração correta dos arquivos TypeScript
+
 ### Debug Mode
 
 ```typescript
@@ -265,6 +270,17 @@ npm run build
 # Arquivos gerados em dist/
 ls dist/
 ```
+
+### Deploy no Netlify
+
+1. **Configuração automática via `netlify.toml`**
+2. **Comandos de build otimizados**
+3. **Headers e cache configurados para PWA**
+4. **Redirects para SPA funcionando**
+
+O deploy é automático via GitHub. Em caso de erro TS6305:
+- Verificar se `vite.config.ts` não está duplicado no tsconfig
+- Confirmar script de build usando apenas `vite build`
 
 ### Configurações do Servidor
 
