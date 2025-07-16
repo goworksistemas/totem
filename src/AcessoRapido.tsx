@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import QRCode from 'react-qr-code';
 import { isTotemMode } from './totemMode';
 import { useGeolocation } from './hooks/useGeolocation';
+import { useInactivityTimeout } from './hooks/useInactivityTimeout';
 import { unitsData, UnitInfo } from './data/unitsData';
 import { clientOptions, visitorOptions } from './data/optionsData';
 import { DynamicIcon } from './utils/iconUtils';
@@ -66,6 +67,10 @@ const AcessoRapido = () => {
   // Estado para controlar se o usuário cancelou a geolocalização
   const [geolocationCancelled, setGeolocationCancelled] = useState(false);
 
+  // Estados para timeout de inatividade
+  const [showInactivityWarning, setShowInactivityWarning] = useState(false);
+  const [warningCountdown, setWarningCountdown] = useState(5);
+
   // Usar hook de geolocalização
   const {
     sortedUnits,
@@ -73,6 +78,38 @@ const AcessoRapido = () => {
     closestUnitId,
     isLoading: isLoadingLocation
   } = useGeolocation(unitsData, {}, geolocationCancelled);
+
+  // Configurar timeout de inatividade para voltar à tela inicial
+  const { resetTimer } = useInactivityTimeout({
+    timeout: 45000, // 45 segundos total
+    warningTime: 5000, // Aviso nos últimos 5 segundos
+    enabled: isTotemMode(), // Só ativo em modo totem
+    onWarning: () => {
+      console.log("[DEBUG] Iniciando aviso de inatividade");
+      setShowInactivityWarning(true);
+      setWarningCountdown(5);
+      
+      // Countdown de 5 segundos
+      let count = 5;
+      const countdownInterval = setInterval(() => {
+        count--;
+        setWarningCountdown(count);
+        if (count <= 0) {
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+    },
+    onTimeout: () => {
+      console.log("[DEBUG] Timeout de inatividade - voltando para tela inicial");
+      setShowInactivityWarning(false);
+      setCurrentStep('initial');
+      setShowingQrDetails(null);
+      setShowingOptionSelection(null);
+      setEmbedUrl('');
+      setVisitorAction(null);
+      setSelectedUnitUrl(null);
+    }
+  });
 
   // Configurar manifesto do totem quando componente é montado
   useEffect(() => {
@@ -723,6 +760,44 @@ const AcessoRapido = () => {
             &copy; {new Date().getFullYear()} GOWORK - Todos os direitos reservados.
           </p>
         </footer>
+      )}
+
+      {/* Modal de Aviso de Inatividade */}
+      {showInactivityWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-yellow-600 to-orange-600 rounded-2xl p-8 max-w-md w-full text-white border-2 border-yellow-400 shadow-2xl animate-pulse">
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="relative">
+                  <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <AlertCircle className="h-10 w-10 text-yellow-200" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
+                    {warningCountdown}
+                  </div>
+                </div>
+              </div>
+              
+              <h3 className="text-2xl font-bold mb-4">⚠️ Atenção!</h3>
+              <p className="text-lg mb-6">
+                Por inatividade, o sistema voltará à tela inicial em{' '}
+                <span className="font-bold text-yellow-200 text-xl">
+                  {warningCountdown} segundo{warningCountdown !== 1 ? 's' : ''}
+                </span>
+              </p>
+              
+              <button 
+                onClick={() => {
+                  setShowInactivityWarning(false);
+                  resetTimer(); // Aqui uso o resetTimer!
+                }}
+                className="w-full px-6 py-4 bg-white text-orange-600 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
+              >
+                Continuar Usando
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

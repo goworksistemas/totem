@@ -269,6 +269,20 @@ Em `src/data/optionsData.ts`:
    - ✅ Reduzido bundle size e melhorada performance
    - ✅ Código mais limpo e focado apenas no essencial
 
+8. **Sistema de timeout por inatividade (IMPLEMENTADO)**
+   - ✅ Hook useInactivityTimeout para controle automático
+   - ✅ Timeout de 45 segundos após inatividade
+   - ✅ Aviso visual com countdown de 5 segundos
+   - ✅ Volta automática para tela inicial
+   - ✅ Detecta mouse, toque, teclado e scroll
+   - ✅ Apenas ativo em modo totem
+   - ✅ Botão "Continuar Usando" para cancelar
+
+9. **Correção opções visitantes (CORRIGIDO)**
+   - ✅ "Alugar sala de reunião" agora tem QR Code E botão navegador
+   - ✅ Visitantes podem escolher entre escanear ou abrir direto
+   - ✅ Mesma funcionalidade das outras opções
+
 ### Debug Mode
 
 ```typescript

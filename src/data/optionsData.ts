@@ -65,7 +65,6 @@ export const visitorOptions: OptionInfo[] = [
     url: "https://networkgo.gowork.com.br/reservar-sala",
     iconName: 'clock',
     bgColor: "bg-gradient-to-br from-amber-400 to-amber-600",
-    textColor: "text-white",
-    qrCodeOnly: true
+    textColor: "text-white"
   }
 ]; 
