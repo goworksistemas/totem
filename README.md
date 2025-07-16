@@ -262,6 +262,13 @@ Em `src/data/optionsData.ts`:
    - ✅ Timeout de segurança de 6 segundos para evitar travamentos
    - ✅ Logs detalhados para debug e monitoramento
 
+7. **Limpeza de funcionalidades desnecessárias (REMOVIDO)**
+   - ✅ Removida mensagem "Precisa de ajuda" com referência a chat inexistente
+   - ✅ Removido caminho de luz animado (SVG + CSS) desnecessário
+   - ✅ Removidas animações CSS não utilizadas
+   - ✅ Reduzido bundle size e melhorada performance
+   - ✅ Código mais limpo e focado apenas no essencial
+
 ### Debug Mode
 
 ```typescript
