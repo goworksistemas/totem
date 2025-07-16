@@ -249,6 +249,12 @@ Em `src/data/optionsData.ts`:
    - Usar apenas `vite build` no script de build
    - Configuração correta dos arquivos TypeScript
 
+5. **Geolocalização não funciona no computador/desktop**
+   - A geolocalização funciona melhor em tablets e dispositivos móveis
+   - Alguns navegadores desktop bloqueiam GPS por padrão
+   - No tablet (ambiente de produção), a funcionalidade será completa
+   - Em caso de falha, o sistema mostra todas as unidades normalmente
+
 ### Debug Mode
 
 ```typescript
@@ -270,6 +276,14 @@ npm run build
 # Arquivos gerados em dist/
 ls dist/
 ```
+
+### Configurações de URLs
+
+**Reserva de Salas**:
+- **Para CLIENTES**: `https://networkgo.com.br/login` (Reservar sala de reunião)
+- **Para VISITANTES**: `https://networkgo.gowork.com.br/reservar-sala` (Alugar sala de reunião por hora)
+
+**Formulários HubSpot**: Configurados por unidade no arquivo `src/data/unitsData.ts`
 
 ### Deploy no Netlify
 

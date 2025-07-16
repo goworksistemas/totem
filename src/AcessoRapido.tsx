@@ -63,13 +63,16 @@ const AcessoRapido = () => {
   // Estado para armazenar a ação do visitante que requer seleção de endereço
   const [visitorAction, setVisitorAction] = useState<Omit<OptionInfo, 'url'> | null>(null);
 
+  // Estado para controlar se o usuário cancelou a geolocalização
+  const [geolocationCancelled, setGeolocationCancelled] = useState(false);
+
   // Usar hook de geolocalização
   const {
     sortedUnits,
     locationError,
     closestUnitId,
     isLoading: isLoadingLocation
-  } = useGeolocation(unitsData);
+  } = useGeolocation(unitsData, {}, geolocationCancelled);
 
   // Configurar manifesto do totem quando componente é montado
   useEffect(() => {
@@ -595,9 +598,19 @@ const AcessoRapido = () => {
             {/* Loading da geolocalização */}
             {isLoadingLocation && (
               <div className="mb-8 px-5 py-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 text-white/90">
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-300 mr-3"></div>
-                  <span className="text-sm font-light">Detectando sua localização...</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-300 mr-3"></div>
+                    <span className="text-sm font-light">Detectando sua localização...</span>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setGeolocationCancelled(true);
+                    }}
+                    className="text-xs text-blue-300 hover:text-blue-200 underline"
+                  >
+                    Pular
+                  </button>
                 </div>
               </div>
             )}
