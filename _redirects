@@ -1,0 +1,7 @@
+# Netlify Redirects para GoWork Totem PWA
+
+# Redirecionar para modo totem
+/totem /totem.html 200
+
+# SPA redirects - todas as rotas para index.html
+/* /index.html 200 

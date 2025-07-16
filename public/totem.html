@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/jpeg" href="/favicongowork.jpg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GoWork Totem - Acesso Rápido</title>
+    
+    <!-- PWA Meta Tags para Totem -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
+    <meta name="apple-mobile-web-app-title" content="GoWork Totem">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileColor" content="#0ea5e9">
+    <meta name="theme-color" content="#0ea5e9">
+    
+    <!-- Manifest específico para totem -->
+    <link rel="manifest" href="/manifest-totem.json">
+    
+    <!-- PWA Icons -->
+    <link rel="apple-touch-icon" href="/favicongowork.jpg">
+    <link rel="icon" type="image/jpeg" sizes="32x32" href="/favicongowork.jpg">
+    <link rel="icon" type="image/jpeg" sizes="16x16" href="/favicongowork.jpg">
+    
+    <!-- Evitar zoom no tablet -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- Estilo específico para totem -->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #1f2937;
+        overflow: hidden;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+      }
+      
+      /* Desabilitar seleção de texto e menu de contexto */
+      * {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      
+      /* Desabilitar zoom */
+      html {
+        touch-action: manipulation;
+      }
+      
+      /* Loading screen */
+      .loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #1e40af 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        z-index: 9999;
+      }
+      
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255,255,255,0.3);
+        border-top: 4px solid #0ea5e9;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading Screen -->
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <h2>Carregando GoWork Totem...</h2>
+      <p>Aguarde um momento</p>
+    </div>
+    
+    <!-- Container para o React App -->
+    <div id="root"></div>
+    
+    <script type="module">
+      // Marcar como modo totem no localStorage IMEDIATAMENTE
+      localStorage.setItem('totem-mode', 'true');
+      
+      // Redirecionar diretamente para acesso rápido quando a página carregar
+      window.addEventListener('load', () => {
+        // Garantir que está marcado como totem
+        localStorage.setItem('totem-mode', 'true');
+        
+        // Ocultar loading após 2 segundos
+        setTimeout(() => {
+          document.getElementById('loading').classList.add('hidden');
+        }, 2000);
+        
+        // Garantir que estamos na rota correta
+        if (window.location.pathname !== '/acesso-rapido') {
+          window.location.replace('/acesso-rapido?totem=true');
+        }
+      });
+      
+      // Desabilitar menu de contexto (clique direito)
+      document.addEventListener('contextmenu', e => e.preventDefault());
+      
+      // Desabilitar F12 e outras teclas de desenvolvedor
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12' || 
+            (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+            (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+            (e.ctrlKey && e.key === 'u')) {
+          e.preventDefault();
+        }
+      });
+      
+      // Evitar zoom com gestos
+      document.addEventListener('gesturestart', e => e.preventDefault());
+      document.addEventListener('gesturechange', e => e.preventDefault());
+      document.addEventListener('gestureend', e => e.preventDefault());
+    </script>
+    
+    <!-- Carregar o app React principal -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html> 

@@ -1,0 +1,32 @@
+{
+  "name": "NetworkGo Totem - Acesso Rápido",
+  "short_name": "GoWork Totem",
+  "description": "Totem de acesso rápido para GoWork",
+  "theme_color": "#0ea5e9",
+  "background_color": "#1f2937",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/acesso-rapido?totem=true&pwa=true",
+  "icons": [
+    {
+      "src": "favicongowork.jpg",
+      "sizes": "64x64",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "favicongowork.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "favicongowork.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "pt-BR",
+  "prefer_related_applications": false
+} 
