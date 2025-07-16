@@ -295,6 +295,7 @@ Em `src/data/optionsData.ts`:
     - ✅ Reset completo do estado no timeout
     - ✅ Botão "Continuar Usando" funciona perfeitamente
     - ✅ Logs detalhados para debug
+    - ✅ Timeout NÃO inicia mais na tela inicial (só quando usuário navegar)
 
 ### Debug Mode
 
