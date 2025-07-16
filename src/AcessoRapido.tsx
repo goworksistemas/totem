@@ -214,8 +214,8 @@ const AcessoRapido = () => {
   // Função para tratar clique em item (verificar se tem múltiplas opções)
   const handleItemClick = (option: OptionInfo) => {
     // Verificar quantas opções o item tem
-    const hasQrOption = true; // Sempre tem QR Code
-    const hasDirectAction = !option.qrCodeOnly && option.actionType !== 'navigateToAddressSelection';
+    const hasQrOption = option.url && option.url.trim() !== ''; // Só tem QR Code se tiver URL válida
+    const hasDirectAction = !option.qrCodeOnly && option.actionType !== 'navigateToAddressSelection' && option.url && option.url.trim() !== '';
     const hasAddressSelection = option.actionType === 'navigateToAddressSelection';
     
     const optionsCount = (hasQrOption ? 1 : 0) + (hasDirectAction ? 1 : 0) + (hasAddressSelection ? 1 : 0);
@@ -229,7 +229,7 @@ const AcessoRapido = () => {
         handleVisitorOptionClick(option);
       } else if (hasDirectAction) {
         openInEmbed(option.url);
-      } else {
+      } else if (hasQrOption) {
         showQrDetails(option);
       }
     }
@@ -273,21 +273,18 @@ const AcessoRapido = () => {
   const handleUnitSelection = (unitFormUrl: string) => {
     setSelectedUnitUrl(unitFormUrl);
     if (visitorAction) {
-      // Ação principal: abrir o formulário HubSpot da unidade no EMBED, mantendo o usuário na mesma página
+      // Criar ação completa com URL da unidade selecionada
       const completeAction: OptionInfo = {
         ...visitorAction,
         url: unitFormUrl,
-        // Se a ação original era qrCodeOnly, mantenha. Senão, permita embed.
-        // Por padrão, as ações de visita que chegam aqui abrem o formulário, então qrCodeOnly=false
-        qrCodeOnly: visitorAction.qrCodeOnly === undefined ? false : visitorAction.qrCodeOnly 
+        // Remove qrCodeOnly para permitir escolha entre QR Code e navegador
+        qrCodeOnly: false
       };
 
-      if (completeAction.qrCodeOnly) {
-        showQrDetails(completeAction);
-      } else {
-        // Usar o embed para manter o usuário na mesma página
-        openInEmbed(unitFormUrl);
-      }
+      console.log("[DEBUG] Unidade selecionada, mostrando opções de acesso:", completeAction);
+      
+      // Mostrar modal para usuário escolher: QR Code ou Abrir no navegador
+      showOptionSelection(completeAction);
     } else {
       // Caso inesperado, apenas voltar para a seleção de visitante ou inicial
       setCurrentStep('visitor');
@@ -455,26 +452,28 @@ const AcessoRapido = () => {
             </div>
             
             <div className="space-y-3">
-              {/* Opção QR Code - sempre disponível */}
-              <button
-                onClick={() => {
-                  showQrDetails(showingOptionSelection);
-                  closeOptionSelection();
-                }}
-                className="w-full flex items-center p-4 rounded-xl bg-gray-800 hover:bg-gray-700 transition-all duration-300 transform hover:scale-102"
-              >
-                <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-blue-600 text-white mr-4">
-                  <QrCode className="h-6 w-6" />
-                </div>
-                <div className="flex-1 text-left">
-                  <h4 className="text-white font-medium">Mostrar QR Code</h4>
-                  <p className="text-gray-400 text-sm">Escaneie com seu celular</p>
-                </div>
-                <ArrowRight className="h-5 w-5 text-gray-400" />
-              </button>
+              {/* Opção QR Code - só se tiver URL válida */}
+              {showingOptionSelection.url && showingOptionSelection.url.trim() !== '' && (
+                <button
+                  onClick={() => {
+                    showQrDetails(showingOptionSelection);
+                    closeOptionSelection();
+                  }}
+                  className="w-full flex items-center p-4 rounded-xl bg-gray-800 hover:bg-gray-700 transition-all duration-300 transform hover:scale-102"
+                >
+                  <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-blue-600 text-white mr-4">
+                    <QrCode className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h4 className="text-white font-medium">Mostrar QR Code</h4>
+                    <p className="text-gray-400 text-sm">Escaneie com seu celular</p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400" />
+                </button>
+              )}
 
               {/* Opção Abrir no Navegador - se disponível */}
-              {!showingOptionSelection.qrCodeOnly && showingOptionSelection.actionType !== 'navigateToAddressSelection' && (
+              {!showingOptionSelection.qrCodeOnly && showingOptionSelection.actionType !== 'navigateToAddressSelection' && showingOptionSelection.url && showingOptionSelection.url.trim() !== '' && (
                 <button
                   onClick={() => {
                     openInEmbed(showingOptionSelection.url);
