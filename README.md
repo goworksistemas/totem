@@ -304,6 +304,15 @@ Em `src/data/optionsData.ts`:
     - ✅ Modal só mostra opções se URL estiver preenchida
     - ✅ Experiência de usuário mais lógica e intuitiva
 
+13. **ELIMINAÇÃO TOTAL DE PERSISTÊNCIA (IMPLEMENTADO)**
+    - ✅ Removido TODOS localStorage.setItem do projeto
+    - ✅ totemMode.ts: detecção dinâmica sem storage
+    - ✅ setTotemMode(): limpa localStorage/sessionStorage automaticamente
+    - ✅ Meta tags no-cache em index.html e totem.html
+    - ✅ Cache PWA mínimo: fontes 7 dias, HubSpot 2h, pages 5min
+    - ✅ Workbox com skipWaiting e cleanupOutdatedCaches
+    - ✅ Totem sempre fresh - sem dados persistentes entre usos
+
 ### Debug Mode
 
 ```typescript
