@@ -255,6 +255,13 @@ Em `src/data/optionsData.ts`:
    - No tablet (ambiente de produção), a funcionalidade será completa
    - Em caso de falha, o sistema mostra todas as unidades normalmente
 
+6. **Sistema de geolocalização travando (CORRIGIDO)**
+   - ✅ Eliminado loop infinito que causava múltiplas execuções
+   - ✅ Implementado controle de execução única com useRef
+   - ✅ Adicionado botão "Pular" para cancelar detecção manual
+   - ✅ Timeout de segurança de 6 segundos para evitar travamentos
+   - ✅ Logs detalhados para debug e monitoramento
+
 ### Debug Mode
 
 ```typescript
