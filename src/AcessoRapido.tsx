@@ -84,7 +84,7 @@ const AcessoRapido = () => {
   const { resetTimer } = useInactivityTimeout({
     timeout: 45000, // 45 segundos total
     warningTime: 5000, // Aviso nos últimos 5 segundos
-    enabled: isTotemMode(), // Só ativo em modo totem
+    enabled: isTotemMode() && currentStep !== 'initial', // Só ativo em modo totem E fora da tela inicial
     onWarning: () => {
       console.log("[DEBUG] Iniciando aviso de inatividade");
       

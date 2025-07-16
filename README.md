@@ -283,6 +283,19 @@ Em `src/data/optionsData.ts`:
    - ✅ Visitantes podem escolher entre escanear ou abrir direto
    - ✅ Mesma funcionalidade das outras opções
 
+10. **Orientação PWA (CORRIGIDO)**
+    - ✅ Corrigido de "portrait" para "any" no manifest e vite.config
+    - ✅ PWA agora segue orientação do tablet (vertical/horizontal)
+    - ✅ Funciona perfeitamente em ambas orientações
+
+11. **Bug timeout inatividade (CORRIGIDO)**
+    - ✅ Corrigido modal travado após countdown terminar
+    - ✅ useRef para gerenciar countdown interval corretamente
+    - ✅ Limpeza adequada de intervals em todas situações
+    - ✅ Reset completo do estado no timeout
+    - ✅ Botão "Continuar Usando" funciona perfeitamente
+    - ✅ Logs detalhados para debug
+
 ### Debug Mode
 
 ```typescript
