@@ -70,6 +70,7 @@ const AcessoRapido = () => {
   // Estados para timeout de inatividade
   const [showInactivityWarning, setShowInactivityWarning] = useState(false);
   const [warningCountdown, setWarningCountdown] = useState(5);
+  const countdownIntervalRef = useRef<number | null>(null);
 
   // Usar hook de geolocalização
   const {
@@ -86,34 +87,64 @@ const AcessoRapido = () => {
     enabled: isTotemMode(), // Só ativo em modo totem
     onWarning: () => {
       console.log("[DEBUG] Iniciando aviso de inatividade");
+      
+      // Limpa countdown anterior se existir
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
+      
       setShowInactivityWarning(true);
       setWarningCountdown(5);
       
       // Countdown de 5 segundos
       let count = 5;
-      const countdownInterval = setInterval(() => {
+      countdownIntervalRef.current = window.setInterval(() => {
         count--;
         setWarningCountdown(count);
         if (count <= 0) {
-          clearInterval(countdownInterval);
+          if (countdownIntervalRef.current) {
+            clearInterval(countdownIntervalRef.current);
+            countdownIntervalRef.current = null;
+          }
         }
       }, 1000);
     },
     onTimeout: () => {
-      console.log("[DEBUG] Timeout de inatividade - voltando para tela inicial");
+      console.log("[DEBUG] Timeout de inatividade atingido - executando reset completo");
+      
+      // Limpa countdown se ainda estiver rodando
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
+      
+      // Reset completo do estado
       setShowInactivityWarning(false);
+      setWarningCountdown(5);
       setCurrentStep('initial');
       setShowingQrDetails(null);
       setShowingOptionSelection(null);
       setEmbedUrl('');
       setVisitorAction(null);
       setSelectedUnitUrl(null);
+      setGeolocationCancelled(false);
+      
+      console.log("[DEBUG] Reset completo realizado - voltando para tela inicial");
     }
   });
 
   // Configurar manifesto do totem quando componente é montado
   useEffect(() => {
     setTotemManifest();
+  }, []);
+
+  // Cleanup do countdown interval quando componente é desmontado
+  useEffect(() => {
+    return () => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
+    };
   }, []);
 
 
@@ -788,8 +819,17 @@ const AcessoRapido = () => {
               
               <button 
                 onClick={() => {
+                  console.log("[DEBUG] Usuário clicou em 'Continuar Usando'");
+                  
+                  // Limpa countdown
+                  if (countdownIntervalRef.current) {
+                    clearInterval(countdownIntervalRef.current);
+                    countdownIntervalRef.current = null;
+                  }
+                  
                   setShowInactivityWarning(false);
-                  resetTimer(); // Aqui uso o resetTimer!
+                  setWarningCountdown(5);
+                  resetTimer(); // Reset do timer de inatividade
                 }}
                 className="w-full px-6 py-4 bg-white text-orange-600 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
               >
