@@ -8,6 +8,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'gowork.png', 'favicongowork.jpg'],
+      devOptions: {
+        enabled: true
+      },
       manifest: {
         name: 'GoWork Totem - Acesso Rápido',
         short_name: 'GoWork Totem',
@@ -39,26 +42,42 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'],
+        // TOTEM SEMPRE FRESH - cache mínimo
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate', // Mais agressivo que CacheFirst
             options: {
               cacheName: 'google-fonts-cache',
               expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 ano
+                maxEntries: 5,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // Apenas 1 semana
               }
             }
           },
           {
             urlPattern: /^https:\/\/share\.hsforms\.com\/.*/i,
-            handler: 'NetworkFirst',
+            handler: 'NetworkFirst', // Sempre tenta rede primeiro
             options: {
               cacheName: 'hubspot-forms-cache',
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 1 dia
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 2 // Apenas 2 horas
+              }
+            }
+          },
+          {
+            // Para o próprio app - sempre buscar atualizações
+            urlPattern: ({ request }) => request.destination === 'document',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'pages-cache',
+              expiration: {
+                maxEntries: 1,
+                maxAgeSeconds: 60 * 5 // Apenas 5 minutos
               }
             }
           }

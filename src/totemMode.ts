@@ -1,5 +1,6 @@
 /**
  * Utilitário para detectar e gerenciar o modo totem
+ * SEM PERSISTÊNCIA - sempre fresh, sem cookies ou localStorage
  */
 
 export const isPWAStandalone = (): boolean => {
@@ -7,22 +8,27 @@ export const isPWAStandalone = (): boolean => {
 };
 
 export const isTotemMode = (): boolean => {
-  // MODO SUPER AGRESSIVO: PWA = TOTEM SEMPRE
+  // DETECÇÃO DINÂMICA SEM LOCALSTORAGE
   const isPWAStandaloneResult = isPWAStandalone();
   const isTotemHTML = window.location.pathname.includes('totem.html');
   const hasTotemParam = new URLSearchParams(window.location.search).has('totem');
   const hasPWAParam = new URLSearchParams(window.location.search).has('pwa');
   const hasForcedParam = new URLSearchParams(window.location.search).has('forced');
   const isTotemUserAgent = navigator.userAgent.includes('GoWorkTotem');
-  const isStoredTotemMode = localStorage.getItem('totem-mode') === 'true';
   
   // SE É PWA STANDALONE, É TOTEM! PONTO FINAL!
   if (isPWAStandaloneResult) {
-    localStorage.setItem('totem-mode', 'true');
+    console.log("[DEBUG] Modo totem detectado: PWA Standalone");
     return true;
   }
   
-  return isTotemHTML || hasTotemParam || hasPWAParam || hasForcedParam || isTotemUserAgent || isStoredTotemMode;
+  const isTotem = isTotemHTML || hasTotemParam || hasPWAParam || hasForcedParam || isTotemUserAgent;
+  
+  if (isTotem) {
+    console.log("[DEBUG] Modo totem detectado via URL/UserAgent");
+  }
+  
+  return isTotem;
 };
 
 export const shouldBypassAuth = (): boolean => {
@@ -30,7 +36,7 @@ export const shouldBypassAuth = (): boolean => {
   const isPWAStandaloneResult = isPWAStandalone();
   
   if (isPWAStandaloneResult) {
-    localStorage.setItem('totem-mode', 'true');
+    console.log("[DEBUG] Bypass auth: PWA Standalone");
     return true;
   }
   
@@ -43,8 +49,7 @@ export const getTotemStartUrl = (): string => {
 };
 
 export const setTotemMode = (): void => {
-  // Marca no localStorage que está em modo totem
-  localStorage.setItem('totem-mode', 'true');
+  console.log("[DEBUG] Configurando modo totem (sem persistência)");
   
   // Define classe CSS para estilização específica
   document.body.classList.add('totem-mode');
@@ -53,13 +58,31 @@ export const setTotemMode = (): void => {
   document.body.style.userSelect = 'none';
   (document.body.style as any).webkitUserSelect = 'none';
   (document.body.style as any).webkitTouchCallout = 'none';
+  
+  // LIMPA QUALQUER STORAGE EXISTENTE - TOTEM SEMPRE FRESH
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
+    console.log("[DEBUG] Storage limpo - totem sempre fresh");
+  } catch (e) {
+    console.log("[DEBUG] Storage não disponível ou já limpo");
+  }
 };
 
 export const isTotemModeStored = (): boolean => {
-  return localStorage.getItem('totem-mode') === 'true';
+  // SEMPRE FALSE - não há mais storage
+  return false;
 };
 
 export const clearTotemMode = (): void => {
-  localStorage.removeItem('totem-mode');
   document.body.classList.remove('totem-mode');
+  
+  // LIMPA TUDO SEMPRE
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
+    console.log("[DEBUG] Storage limpo ao sair do modo totem");
+  } catch (e) {
+    console.log("[DEBUG] Storage não disponível");
+  }
 }; 

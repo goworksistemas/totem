@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GoWork Totem - Acesso Rápido</title>
     
+    <!-- Meta tags para evitar cache - TOTEM SEMPRE FRESH -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
     <!-- PWA Meta Tags para Totem -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
@@ -102,13 +107,19 @@
     <div id="root"></div>
     
     <script type="module">
-      // Marcar como modo totem no localStorage IMEDIATAMENTE
-      localStorage.setItem('totem-mode', 'true');
+      // TOTEM SEM PERSISTÊNCIA - sempre fresh, sem localStorage
+      console.log("[DEBUG] Totem.html carregando - sem persistência");
       
       // Redirecionar diretamente para acesso rápido quando a página carregar
       window.addEventListener('load', () => {
-        // Garantir que está marcado como totem
-        localStorage.setItem('totem-mode', 'true');
+        // LIMPA QUALQUER STORAGE EXISTENTE
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+          console.log("[DEBUG] Storage limpo no totem.html");
+        } catch (e) {
+          console.log("[DEBUG] Storage não disponível");
+        }
         
         // Ocultar loading após 2 segundos
         setTimeout(() => {

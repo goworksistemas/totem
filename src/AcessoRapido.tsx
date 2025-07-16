@@ -136,6 +136,17 @@ const AcessoRapido = () => {
   // Configurar manifesto do totem quando componente é montado
   useEffect(() => {
     setTotemManifest();
+    
+    // Se é modo totem, garantir que não há persistência
+    if (isTotemMode()) {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log("[DEBUG] Storage limpo no AcessoRapido - totem sempre fresh");
+      } catch (e) {
+        console.log("[DEBUG] Storage não disponível no AcessoRapido");
+      }
+    }
   }, []);
 
   // Cleanup do countdown interval quando componente é desmontado
