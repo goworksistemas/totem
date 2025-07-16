@@ -13,7 +13,7 @@ import {
   Copy,
   QrCode,
   Smartphone,
-  HelpCircle,
+
   ArrowRight,
   AlertCircle,
   Star,
@@ -58,7 +58,7 @@ const AcessoRapido = () => {
   const [showingOptionSelection, setShowingOptionSelection] = useState<OptionInfo | null>(null);
   // Ref para cálculo de posição da animação
   const qrModalRef = useRef<HTMLDivElement>(null);
-  const [qrPathD, setQrPathD] = useState('');
+
   const [selectedUnitUrl, setSelectedUnitUrl] = useState<string | null>(null);
   // Estado para armazenar a ação do visitante que requer seleção de endereço
   const [visitorAction, setVisitorAction] = useState<Omit<OptionInfo, 'url'> | null>(null);
@@ -79,28 +79,7 @@ const AcessoRapido = () => {
     setTotemManifest();
   }, []);
 
-  // Efeito para calcular o caminho do SVG para o QR code modal
-  useEffect(() => {
-    if (showingQrDetails && qrModalRef.current) {
-      const rect = qrModalRef.current.getBoundingClientRect();
-      const startX = rect.left + rect.width / 2;
-      const startY = rect.bottom;
-      const endX = window.innerWidth - 70;
-      const endY = window.innerHeight - 70;
-      
-      const controlX1 = startX;
-      const controlY1 = startY + 100;
-      const controlX2 = endX - 100;
-      const controlY2 = endY - 100;
-      
-      const d = `M ${startX} ${startY} 
-                 C ${controlX1} ${controlY1}, 
-                   ${controlX2} ${controlY2}, 
-                   ${endX} ${endY}`;
-      
-      setQrPathD(d);
-    }
-  }, [showingQrDetails]);
+
 
   // Função para voltar à etapa inicial
   const goBack = () => {
@@ -360,12 +339,7 @@ const AcessoRapido = () => {
               </div>
             )}
             
-            <div className="mb-5 flex items-center bg-blue-800 bg-opacity-40 p-4 rounded-lg border border-blue-700">
-              <HelpCircle className="h-5 w-5 text-blue-300 mr-2" />
-              <p className="text-sm text-blue-100">
-                <strong>Precisa de ajuda?</strong> Clique no ícone de interrogação <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-500 text-white rounded-full text-xs font-bold">?</span> no canto inferior direito da tela para falar com um atendente.
-              </p>
-            </div>
+
             
             <div className="flex justify-between mt-4">
               {!showingQrDetails.qrCodeOnly && (
@@ -388,54 +362,9 @@ const AcessoRapido = () => {
             </div>
           </div>
           
-          {/* Animação de luz guiando para o botão de chat */}
-          <style dangerouslySetInnerHTML={{ __html: `
-            @keyframes flow {
-              0% { 
-                stroke-dashoffset: 1000; 
-                opacity: 0.2;
-              }
-              40% { 
-                opacity: 0.7;
-              }
-              70% { 
-                opacity: 0.7;
-              }
-              100% { 
-                stroke-dashoffset: 0; 
-                opacity: 0.2;
-              }
-            }
-            
-            .flow-path {
-              stroke-dasharray: 1000;
-              stroke-dashoffset: 1000;
-              animation: flow 4s infinite;
-            }
-          `}} />
+
           
-          {/* SVG com caminho de luz animado */}
-          {qrPathD && (
-            <svg className="fixed inset-0 w-full h-full pointer-events-none" style={{ zIndex: 9999 }}>
-              <defs>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="5" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
-              
-              {/* Caminho do popup até o canto inferior direito */}
-              <path 
-                className="flow-path" 
-                d={qrPathD}
-                fill="none" 
-                stroke="#4A6FFC" 
-                strokeWidth="10" 
-                filter="url(#glow)" 
-                strokeLinecap="round"
-              />
-            </svg>
-          )}
+
         </div>
       )}
 
