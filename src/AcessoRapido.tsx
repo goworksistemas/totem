@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import QRCode from 'react-qr-code';
 import { isTotemMode } from './totemMode';
 import { useGeolocation } from './hooks/useGeolocation';
 import { useInactivityTimeout } from './hooks/useInactivityTimeout';
-import { unitsData, UnitInfo } from './data/unitsData';
-import { clientOptions, visitorOptions } from './data/optionsData';
+import { useLanguage } from './contexts/LanguageContext';
+import { unitsData } from './data/unitsData';
+import { createClientOptions, createVisitorOptions } from './data/optionsData';
 import { DynamicIcon } from './utils/iconUtils';
 import { Step, OptionInfo } from './types';
 import { 
@@ -14,7 +15,6 @@ import {
   Copy,
   QrCode,
   Smartphone,
-
   ArrowRight,
   AlertCircle,
   Star,
@@ -22,7 +22,7 @@ import {
   Building,
   User,
   MapPin,
-  Home
+  Home,
 } from 'lucide-react';
 
 // Função para trocar o manifesto para o modo totem
@@ -43,6 +43,8 @@ const setTotemManifest = () => {
 };
 
 const AcessoRapido = () => {
+  const { t, language, setLanguage } = useLanguage();
+  
   // Estado para controlar em qual etapa estamos
   const [currentStep, setCurrentStep] = useState<Step>('initial');
   // Estado para controlar o embed
@@ -50,7 +52,7 @@ const AcessoRapido = () => {
   // Estado para armazenar a etapa anterior antes de abrir o embed
   const [previousStep, setPreviousStep] = useState<Step>('initial');
   // Estado para controlar a visualização em tela cheia
-  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [, setIsFullScreen] = useState(false);
   // Estado para mostrar o modal de QR Code e detalhes
   const [showingQrDetails, setShowingQrDetails] = useState<OptionInfo | null>(null);
   // Estado para mostrar feedback de cópia
@@ -60,7 +62,7 @@ const AcessoRapido = () => {
   // Ref para cálculo de posição da animação
   const qrModalRef = useRef<HTMLDivElement>(null);
 
-  const [selectedUnitUrl, setSelectedUnitUrl] = useState<string | null>(null);
+  const [, setSelectedUnitUrl] = useState<string | null>(null);
   // Estado para armazenar a ação do visitante que requer seleção de endereço
   const [visitorAction, setVisitorAction] = useState<Omit<OptionInfo, 'url'> | null>(null);
 
@@ -72,6 +74,10 @@ const AcessoRapido = () => {
   const [warningCountdown, setWarningCountdown] = useState(5);
   const countdownIntervalRef = useRef<number | null>(null);
 
+  // Opções traduzidas
+  const clientOptions = createClientOptions(t);
+  const visitorOptions = createVisitorOptions(t);
+
   // Usar hook de geolocalização
   const {
     sortedUnits,
@@ -80,9 +86,10 @@ const AcessoRapido = () => {
     isLoading: isLoadingLocation
   } = useGeolocation(unitsData, {}, geolocationCancelled);
 
+
   // Configurar timeout de inatividade para voltar à tela inicial
   const { resetTimer } = useInactivityTimeout({
-    timeout: 45000, // 45 segundos total
+    timeout: 20000, // 20 segundos total
     warningTime: 5000, // Aviso nos últimos 5 segundos
     enabled: isTotemMode() && currentStep !== 'initial', // Só ativo em modo totem E fora da tela inicial
     onWarning: () => {
@@ -146,6 +153,7 @@ const AcessoRapido = () => {
       } catch (e) {
         console.log("[DEBUG] Storage não disponível no AcessoRapido");
       }
+      
     }
   }, []);
 
@@ -195,12 +203,14 @@ const AcessoRapido = () => {
     setEmbedUrl(url);
     // Ativar modo tela cheia automaticamente
     setIsFullScreen(true);
+    
+    // Teclado virtual removido
   };
 
-  // Função para alternar entre modo normal e tela cheia
-  const toggleFullScreen = () => {
-    setIsFullScreen(!isFullScreen);
-  };
+  // Função para alternar entre modo normal e tela cheia (não utilizada atualmente)
+  // const toggleFullScreen = () => {
+  //   setIsFullScreen(!isFullScreen);
+  // };
 
   // Função para mostrar detalhes e QR code
   const showQrDetails = (option: OptionInfo) => {
@@ -263,8 +273,8 @@ const AcessoRapido = () => {
     } else if (option.url.startsWith('/')) {
       // Navegação interna (ex: /reservar-sala)
       if (isTotemMode()) {
-        // No modo totem, navegar diretamente ao invés de embed para evitar "totem dentro de totem"
-        window.location.href = option.url;
+        // No modo totem, usar embed para manter o teclado virtual disponível
+        openInEmbed(window.location.origin + option.url);
       } else {
         // Fora do modo totem, usar redirect normal
         window.location.href = option.url;
@@ -315,37 +325,6 @@ const AcessoRapido = () => {
         </div>
       )}
 
-      <head>
-        <title>Acesso Rápido | GOWORK</title>
-        <meta name="description" content="Acesso rápido às funcionalidades da GOWORK" />
-        <style>
-          {`
-            @keyframes blob {
-              0% { transform: scale(1) translate(0px, 0px); }
-              33% { transform: scale(1.1) translate(30px, -20px); }
-              66% { transform: scale(0.9) translate(-20px, 30px); }
-              100% { transform: scale(1) translate(0px, 0px); }
-            }
-            .animate-blob {
-              animation: blob 12s infinite alternate;
-            }
-            .animation-delay-2000 {
-              animation-delay: 2s;
-            }
-            .animation-delay-4000 {
-              animation-delay: 4s;
-            }
-            .glass-card {
-              backdrop-filter: blur(16px);
-              background: rgba(255, 255, 255, 0.08);
-              border: 1px solid rgba(255, 255, 255, 0.15);
-            }
-            .hover-glow:hover {
-              box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
-            }
-          `}
-        </style>
-      </head>
 
       {/* Header com logo - oculto quando embed está ativo OU na seleção de unidade */}
       {!embedUrl && currentStep !== 'visitorAddressSelection' && (
@@ -392,7 +371,7 @@ const AcessoRapido = () => {
             </div>
             
             <div className="mb-5">
-              <p className="text-sm text-gray-300 mb-2">Link de acesso:</p>
+              <p className="text-sm text-gray-300 mb-2">{t('access_link')}</p>
               <div className="flex items-center">
                 <div className="bg-gray-800 rounded-lg p-3 text-sm flex-1 truncate border border-gray-700 text-gray-300">
                   {showingQrDetails.url}
@@ -400,13 +379,13 @@ const AcessoRapido = () => {
                 <button 
                   onClick={() => copyToClipboard(showingQrDetails.url)}
                   className="ml-2 p-3 rounded-lg bg-blue-600 hover:bg-blue-500 transition-all duration-300 transform hover:scale-105"
-                  title="Copiar link"
+                  title={t('copy_link')}
                 >
                   <Copy className="h-5 w-5 text-white" />
                 </button>
               </div>
               {copyFeedback && (
-                <p className="text-sm text-green-400 mt-2 animate-pulse">✓ Link copiado para a área de transferência!</p>
+                <p className="text-sm text-green-400 mt-2 animate-pulse">{t('link_copied')}</p>
               )}
             </div>
             
@@ -428,14 +407,14 @@ const AcessoRapido = () => {
                   }}
                   className="px-5 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
                 >
-                  Abrir no navegador
+                  {t('open_browser')}
                 </button>
               )}
               <button 
                 onClick={closeQrDetails}
                 className={`px-5 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 text-white transition-all duration-300 transform hover:scale-105 ${showingQrDetails.qrCodeOnly ? 'w-full' : ''}`}
               >
-                Fechar
+                {t('close')}
               </button>
             </div>
           </div>
@@ -478,8 +457,8 @@ const AcessoRapido = () => {
                     <QrCode className="h-6 w-6" />
                   </div>
                   <div className="flex-1 text-left">
-                    <h4 className="text-white font-medium">Mostrar QR Code</h4>
-                    <p className="text-gray-400 text-sm">Escaneie com seu celular</p>
+                    <h4 className="text-white font-medium">{t('show_qr')}</h4>
+                    <p className="text-gray-400 text-sm">{t('show_qr_desc')}</p>
                   </div>
                   <ArrowRight className="h-5 w-5 text-gray-400" />
                 </button>
@@ -498,8 +477,8 @@ const AcessoRapido = () => {
                     <ExternalLink className="h-6 w-6" />
                   </div>
                   <div className="flex-1 text-left">
-                    <h4 className="text-white font-medium">Abrir no Navegador</h4>
-                    <p className="text-gray-400 text-sm">Acessar diretamente na tela</p>
+                    <h4 className="text-white font-medium">{t('open_browser')}</h4>
+                    <p className="text-gray-400 text-sm">{t('open_browser_desc')}</p>
                   </div>
                   <ArrowRight className="h-5 w-5 text-gray-400" />
                 </button>
@@ -518,8 +497,8 @@ const AcessoRapido = () => {
                     <MapPin className="h-6 w-6" />
                   </div>
                   <div className="flex-1 text-left">
-                    <h4 className="text-white font-medium">Selecionar Unidade</h4>
-                    <p className="text-gray-400 text-sm">Escolher localização</p>
+                    <h4 className="text-white font-medium">{t('select_unit_option')}</h4>
+                    <p className="text-gray-400 text-sm">{t('select_unit_desc')}</p>
                   </div>
                   <ArrowRight className="h-5 w-5 text-gray-400" />
                 </button>
@@ -540,14 +519,14 @@ const AcessoRapido = () => {
                 className="mr-2 flex items-center text-white bg-blue-600 hover:bg-blue-500 px-2 py-1 rounded-lg transition-colors text-sm"
               >
                 <ChevronLeft className="h-4 w-4 mr-1" />
-                <span>Voltar</span>
+                <span>{t('back')}</span>
               </button>
               <button 
                 onClick={goToInitialMenu}
-                className="flex items-center text-white bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded-lg transition-colors text-sm"
+                className="mr-2 flex items-center text-white bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded-lg transition-colors text-sm"
               >
                 <Home className="h-4 w-4 mr-1" />
-                <span>Início</span>
+                <span>{t('home')}</span>
               </button>
             </div>
             <button 
@@ -559,13 +538,14 @@ const AcessoRapido = () => {
           </div>
 
           {/* Iframe em tela cheia */}
-          <div className="w-full h-[calc(100vh-33px)] bg-white">
+          <div className="w-full h-[calc(100vh-33px)] bg-white relative">
             <iframe 
               src={embedUrl} 
               title="Conteúdo embutido" 
               className="w-full h-full border-0" 
               frameBorder="0"
             />
+            
           </div>
         </>
       ) : currentStep === 'visitorAddressSelection' ? (
@@ -590,7 +570,7 @@ const AcessoRapido = () => {
                 <ArrowLeft className="h-5 w-5 text-white" />
               </button>
               <h1 className="ml-6 text-2xl md:text-4xl font-light text-white tracking-tight">
-                Em qual unidade você está?
+                {t('select_unit')}
               </h1>
             </header>
             
@@ -610,7 +590,7 @@ const AcessoRapido = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-300 mr-3"></div>
-                    <span className="text-sm font-light">Detectando sua localização...</span>
+                    <span className="text-sm font-light">{t('detecting_location')}</span>
                   </div>
                   <button 
                     onClick={() => {
@@ -618,7 +598,7 @@ const AcessoRapido = () => {
                     }}
                     className="text-xs text-blue-300 hover:text-blue-200 underline"
                   >
-                    Pular
+                    {t('skip')}
                   </button>
                 </div>
               </div>
@@ -649,7 +629,7 @@ const AcessoRapido = () => {
                           {isClosest && (
                             <div className="flex items-center px-3 py-1 rounded-full bg-blue-500/20 backdrop-blur-sm border border-blue-500/20">
                               <Star className="h-3.5 w-3.5 text-blue-300 mr-1.5" fill="#93c5fd" />
-                              <span className="text-xs text-blue-100 font-medium">Mais próxima</span>
+                              <span className="text-xs text-blue-100 font-medium">{t('closest')}</span>
                             </div>
                           )}
                         </div>
@@ -679,15 +659,118 @@ const AcessoRapido = () => {
       ) : (
         <main className="flex-1 flex items-center justify-center w-full z-10 relative px-3 py-2">
           <div className="w-full h-full max-w-5xl glass-card rounded-xl shadow-2xl p-4 transition-all duration-500 overflow-auto">
+
             {/* Etapa Inicial - Seleção de tipo de usuário */}
             {currentStep === 'initial' && (
               <div className="flex flex-col items-center h-full justify-center">
+                {/* Seleção de Idiomas - ACIMA do título */}
+                <div className="mb-8">
+                  <div className="flex justify-center space-x-6">
+                    <button
+                      onClick={() => setLanguage('pt')}
+                      className={`flex flex-col items-center transition-all duration-300 transform hover:scale-110 ${
+                        language === 'pt' ? 'scale-110' : 'opacity-80 hover:opacity-100'
+                      }`}
+                      title="Português (Brasil)"
+                    >
+                      <div className={`w-20 h-20 rounded-full overflow-hidden transition-all duration-300 ${
+                        language === 'pt' 
+                          ? 'ring-4 ring-blue-400 shadow-lg' 
+                          : 'hover:shadow-md'
+                      }`}>
+                        <img 
+                          src="https://cdn-icons-png.flaticon.com/256/5315/5315340.png" 
+                          alt="Português (Brasil)" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className={`text-xs mt-2 font-medium transition-colors duration-300 ${
+                        language === 'pt' ? 'text-blue-300' : 'text-gray-300'
+                      }`}>
+                        PT-BR
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setLanguage('en')}
+                      className={`flex flex-col items-center transition-all duration-300 transform hover:scale-110 ${
+                        language === 'en' ? 'scale-110' : 'opacity-80 hover:opacity-100'
+                      }`}
+                      title="English"
+                    >
+                      <div className={`w-20 h-20 rounded-full overflow-hidden transition-all duration-300 ${
+                        language === 'en' 
+                          ? 'ring-4 ring-blue-400 shadow-lg' 
+                          : 'hover:shadow-md'
+                      }`}>
+                        <img 
+                          src="https://images.vexels.com/media/users/3/163966/isolated/preview/6ecbb5ec8c121c0699c9b9179d6b24aa-circulo-do-icone-do-idioma-da-bandeira-da-inglaterra.png" 
+                          alt="English" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className={`text-xs mt-2 font-medium transition-colors duration-300 ${
+                        language === 'en' ? 'text-blue-300' : 'text-gray-300'
+                      }`}>
+                        EN
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setLanguage('es')}
+                      className={`flex flex-col items-center transition-all duration-300 transform hover:scale-110 ${
+                        language === 'es' ? 'scale-110' : 'opacity-80 hover:opacity-100'
+                      }`}
+                      title="Español"
+                    >
+                      <div className={`w-20 h-20 rounded-full overflow-hidden transition-all duration-300 ${
+                        language === 'es' 
+                          ? 'ring-4 ring-blue-400 shadow-lg' 
+                          : 'hover:shadow-md'
+                      }`}>
+                        <img 
+                          src="https://cdn-icons-png.freepik.com/512/197/197593.png" 
+                          alt="Español" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className={`text-xs mt-2 font-medium transition-colors duration-300 ${
+                        language === 'es' ? 'text-blue-300' : 'text-gray-300'
+                      }`}>
+                        ES
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setLanguage('fr')}
+                      className={`flex flex-col items-center transition-all duration-300 transform hover:scale-110 ${
+                        language === 'fr' ? 'scale-110' : 'opacity-80 hover:opacity-100'
+                      }`}
+                      title="Français"
+                    >
+                      <div className={`w-20 h-20 rounded-full overflow-hidden transition-all duration-300 ${
+                        language === 'fr' 
+                          ? 'ring-4 ring-blue-400 shadow-lg' 
+                          : 'hover:shadow-md'
+                      }`}>
+                        <img 
+                          src="https://e7.pngegg.com/pngimages/193/198/png-clipart-flag-of-france-language-french-translation-france-blue-angle-thumbnail.png" 
+                          alt="Français" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className={`text-xs mt-2 font-medium transition-colors duration-300 ${
+                        language === 'fr' ? 'text-blue-300' : 'text-gray-300'
+                      }`}>
+                        FR
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
                 <div className="text-center mb-5">
                   <h1 className="text-3xl font-bold text-white mb-2 tracking-wider">
-                    SEJA BEM-VINDO!
+                    {t('welcome')}
                   </h1>
                   <p className="text-lg text-blue-200">
-                    Selecione uma opção para continuar
+                    {t('select_option')}
                   </p>
                 </div>
 
@@ -699,8 +782,8 @@ const AcessoRapido = () => {
                     <div className="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white mb-3 shadow-lg transition-all duration-500 transform hover:rotate-6">
                       <Building className="h-10 w-10" />
                     </div>
-                    <h2 className="text-xl font-bold text-white mb-1 tracking-wide">Sou cliente da GoWork</h2>
-                    <p className="text-center text-blue-100">Acesse serviços exclusivos para clientes</p>
+                    <h2 className="text-xl font-bold text-white mb-1 tracking-wide">{t('client')}</h2>
+                    <p className="text-center text-blue-100">{t('client_desc')}</p>
                   </button>
 
                   <button
@@ -710,8 +793,8 @@ const AcessoRapido = () => {
                     <div className="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-white mb-3 shadow-lg transition-all duration-500 transform hover:rotate-6">
                       <User className="h-10 w-10" />
                     </div>
-                    <h2 className="text-xl font-bold text-white mb-1 tracking-wide">Sou visitante</h2>
-                    <p className="text-center text-blue-100">Vim fazer uma reunião, visitar, conhecer ou alugar um espaço</p>
+                    <h2 className="text-xl font-bold text-white mb-1 tracking-wide">{t('visitor')}</h2>
+                    <p className="text-center text-blue-100">{t('visitor_desc')}</p>
                   </button>
                 </div>
               </div>
@@ -728,7 +811,7 @@ const AcessoRapido = () => {
                     <ArrowLeft className="h-5 w-5 text-white" />
                   </button>
                   <h1 className="text-2xl font-bold text-white tracking-wider">
-                    OPÇÕES PARA CLIENTES
+                    {t('client_options')}
                   </h1>
                 </div>
 
@@ -766,7 +849,7 @@ const AcessoRapido = () => {
                     <ArrowLeft className="h-5 w-5 text-white" />
                   </button>
                   <h1 className="text-2xl font-bold text-white tracking-wider">
-                    O QUE VOCÊ DESEJA?
+                    {t('visitor_options')}
                   </h1>
                 </div>
 
@@ -800,7 +883,7 @@ const AcessoRapido = () => {
       {!embedUrl && currentStep !== 'visitorAddressSelection' && (
         <footer className="py-2 glass-card border-t border-gray-700 z-10 text-center">
           <p className="text-sm text-blue-200">
-            &copy; {new Date().getFullYear()} GOWORK - Todos os direitos reservados.
+            © {new Date().getFullYear()} GOWORK - Todos os direitos reservados.
           </p>
         </footer>
       )}
@@ -845,12 +928,13 @@ const AcessoRapido = () => {
                 }}
                 className="w-full px-6 py-4 bg-white text-orange-600 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
               >
-                Continuar Usando
+                {t('continue_using')}
               </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 };

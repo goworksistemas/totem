@@ -64,6 +64,24 @@ Totem/
 - **React QR Code** - Geração de códigos QR
 - **Geolocation API** - Detecção de localização
 
+## 📋 Atualizações Recentes
+
+### ✅ URLs dos Formulários HubSpot Atualizados
+Todos os URLs dos formulários do HubSpot foram atualizados para as versões corretas:
+
+- **Paulista 302**: `https://share.hsforms.com/2U5wutuhySQS2FyAUKdvkfwe4grb`
+- **Paulista 475**: `https://share.hsforms.com/2E9yx7Oe3SeS4a6ZJgu5csge4grb`
+- **Alameda Santos**: `https://share.hsforms.com/2woP3OkXaSUW5K521je16nAe4grb`
+- **Consolação**: `https://share.hsforms.com/2zhbaq6rFTZyXdG8Q7aLMEge4grb`
+- **Ministro**: `https://share.hsforms.com/2XzOImLAGQAqEYQg9ctm8jge4grb`
+- **Joaquim Antunes**: `https://share.hsforms.com/2LTF6OnXhSUaxFtbK292d0Ae4grb`
+- **Butanta**: `https://share.hsforms.com/2dNNp40veRCWXP9HSV2zuqAe4grb`
+- **Pinheiros**: `https://share.hsforms.com/23AkXRiU8Ti-ioJ-Z4Ew7QAe4grb`
+- **Campus 1**: `https://share.hsforms.com/2IPszyYV6QuaAOu4A4uJFKAe4grb`
+- **Campus 2**: `https://share.hsforms.com/22wbAO2VjS0qSZkxAbtfG0Ae4grb`
+- **Amauri 2**: `https://share.hsforms.com/2vNuBDKfUSIaSGWiB2B9sbwe4grb`
+- **Funchal 2**: `https://share.hsforms.com/2_MOMR__sREGD3AJxVbGeFQe4grb`
+
 ## 📦 Instalação
 
 ### Pré-requisitos

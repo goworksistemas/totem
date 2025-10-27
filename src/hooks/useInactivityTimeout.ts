@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 
 interface InactivityTimeoutOptions {
-  timeout?: number; // Tempo em milissegundos (padrão: 30 segundos)
+  timeout?: number; // Tempo em milissegundos (padrão: 20 segundos)
   onTimeout: () => void; // Função chamada quando o timeout acontece
   enabled?: boolean; // Se o timeout está ativo (padrão: true)
   warningTime?: number; // Tempo em ms para mostrar aviso antes do timeout
@@ -9,7 +9,7 @@ interface InactivityTimeoutOptions {
 }
 
 export const useInactivityTimeout = ({
-  timeout = 30000, // 30 segundos padrão
+  timeout = 20000, // 20 segundos padrão
   onTimeout,
   enabled = true,
   warningTime = 5000, // 5 segundos de aviso
