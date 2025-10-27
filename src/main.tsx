@@ -31,6 +31,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route path="/" element={<AcessoRapido />} />
           <Route path="/acesso-rapido" element={<AcessoRapido />} />
+          <Route path="/client" element={<AcessoRapido />} />
+          <Route path="/visitor" element={<AcessoRapido />} />
+          <Route path="/visitor-address" element={<AcessoRapido />} />
           <Route path="*" element={<AcessoRapido />} />
         </Routes>
       </Router>

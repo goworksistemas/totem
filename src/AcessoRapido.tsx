@@ -8,6 +8,7 @@ import { unitsData } from './data/unitsData';
 import { createClientOptions, createVisitorOptions } from './data/optionsData';
 import { DynamicIcon } from './utils/iconUtils';
 import { Step, OptionInfo } from './types';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ExternalLink, 
   X,
@@ -44,9 +45,20 @@ const setTotemManifest = () => {
 
 const AcessoRapido = () => {
   const { t, language, setLanguage } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Determinar currentStep baseado na URL
+  const getCurrentStepFromUrl = (): Step => {
+    const path = location.pathname;
+    if (path.includes('/client')) return 'client';
+    if (path.includes('/visitor')) return 'visitor';
+    if (path.includes('/visitor-address')) return 'visitorAddressSelection';
+    return 'initial';
+  };
   
   // Estado para controlar em qual etapa estamos
-  const [currentStep, setCurrentStep] = useState<Step>('initial');
+  const [currentStep, setCurrentStep] = useState<Step>(getCurrentStepFromUrl());
   // Estado para controlar o embed
   const [embedUrl, setEmbedUrl] = useState<string | null>(null);
   // Estado para armazenar a etapa anterior antes de abrir o embed
@@ -71,7 +83,7 @@ const AcessoRapido = () => {
 
   // Estados para timeout de inatividade
   const [showInactivityWarning, setShowInactivityWarning] = useState(false);
-  const [warningCountdown, setWarningCountdown] = useState(5);
+  const [warningCountdown, setWarningCountdown] = useState(10);
   const countdownIntervalRef = useRef<number | null>(null);
 
   // Opções traduzidas
@@ -88,12 +100,16 @@ const AcessoRapido = () => {
 
 
   // Configurar timeout de inatividade para voltar à tela inicial
+  // HABILITADO SEMPRE para testes (remover isTotemMode() em produção se necessário)
+  const isTimeoutEnabled = currentStep !== 'initial'; // Ativo fora da tela inicial
+  console.log("[DEBUG] Timeout enabled?", isTimeoutEnabled, "| isTotemMode:", isTotemMode(), "| currentStep:", currentStep);
+  
   const { resetTimer } = useInactivityTimeout({
     timeout: 20000, // 20 segundos total
-    warningTime: 5000, // Aviso nos últimos 5 segundos
-    enabled: isTotemMode() && currentStep !== 'initial', // Só ativo em modo totem E fora da tela inicial
+    warningTime: 10000, // Aviso nos últimos 10 segundos
+    enabled: isTimeoutEnabled, // Ativo fora da tela inicial
     onWarning: () => {
-      console.log("[DEBUG] Iniciando aviso de inatividade");
+      console.log("[DEBUG] 🚨 CALLBACK onWarning EXECUTADO - 10 segundos restantes");
       
       // Limpa countdown anterior se existir
       if (countdownIntervalRef.current) {
@@ -101,34 +117,60 @@ const AcessoRapido = () => {
       }
       
       setShowInactivityWarning(true);
-      setWarningCountdown(5);
+      setWarningCountdown(10);
       
-      // Countdown de 5 segundos
-      let count = 5;
+      console.log("[DEBUG] Modal de aviso EXIBIDO - iniciando countdown de 10s");
+      
+      // Countdown de 10 segundos
+      let count = 10;
       countdownIntervalRef.current = window.setInterval(() => {
         count--;
+        console.log("[DEBUG] ⏱️ Countdown:", count);
         setWarningCountdown(count);
+        
         if (count <= 0) {
+          console.log("[DEBUG] 🚨 COUNTDOWN CHEGOU A ZERO - RESETANDO AGORA!");
+          
+          // Limpa o countdown
           if (countdownIntervalRef.current) {
             clearInterval(countdownIntervalRef.current);
             countdownIntervalRef.current = null;
           }
+          
+          // FORÇAR RESET IMEDIATO AQUI
+          console.log("[DEBUG] 🔄 EXECUTANDO RESET COMPLETO FORÇADO");
+          setShowInactivityWarning(false);
+          setWarningCountdown(10);
+          setShowingQrDetails(null);
+          setShowingOptionSelection(null);
+          setEmbedUrl('');
+          setVisitorAction(null);
+          setSelectedUnitUrl(null);
+          setGeolocationCancelled(false);
+          
+          // NAVEGAR PARA INICIAL
+          console.log("[DEBUG] 🏠 NAVEGANDO PARA TELA INICIAL");
+          changeStep('initial');
+          
+          console.log("[DEBUG] ✅ RESET COMPLETO EXECUTADO!");
         }
       }, 1000);
     },
     onTimeout: () => {
-      console.log("[DEBUG] Timeout de inatividade atingido - executando reset completo");
+      console.log("[DEBUG] 🚨🚨🚨 TIMEOUT DE INATIVIDADE ATINGIDO - EXECUTANDO RESET COMPLETO 🚨🚨🚨");
+      console.log("[DEBUG] currentStep antes do reset:", currentStep);
       
       // Limpa countdown se ainda estiver rodando
       if (countdownIntervalRef.current) {
+        console.log("[DEBUG] Limpando countdown interval");
         clearInterval(countdownIntervalRef.current);
         countdownIntervalRef.current = null;
       }
       
       // Reset completo do estado
+      console.log("[DEBUG] Aplicando reset completo dos estados...");
       setShowInactivityWarning(false);
-      setWarningCountdown(5);
-      setCurrentStep('initial');
+      setWarningCountdown(10);
       setShowingQrDetails(null);
       setShowingOptionSelection(null);
       setEmbedUrl('');
@@ -136,7 +178,13 @@ const AcessoRapido = () => {
       setSelectedUnitUrl(null);
       setGeolocationCancelled(false);
       
-      console.log("[DEBUG] Reset completo realizado - voltando para tela inicial");
+      console.log("[DEBUG] ✅ RESET COMPLETO REALIZADO - VOLTANDO PARA TELA INICIAL");
+      
+      // USAR changeStep para garantir navegação
+      changeStep('initial');
+      
+      console.log("[DEBUG] Navegação forçada para /");
+      window.scrollTo(0, 0);
     }
   });
 
@@ -168,33 +216,46 @@ const AcessoRapido = () => {
 
 
 
+  // Função auxiliar para mudar de step E navegar
+  const changeStep = (step: Step) => {
+    setCurrentStep(step);
+    
+    // Atualizar URL também
+    switch(step) {
+      case 'initial':
+        navigate('/');
+        break;
+      case 'client':
+        navigate('/client');
+        break;
+      case 'visitor':
+        navigate('/visitor');
+        break;
+      case 'visitorAddressSelection':
+        navigate('/visitor-address');
+        break;
+    }
+    
+    console.log("[DEBUG] Step alterado para:", step);
+  };
+
   // Função para voltar à etapa inicial
   const goBack = () => {
-    // Se estiver em modo totem, permanecer na tela inicial de acesso rápido
-    if (isTotemMode()) {
-      setCurrentStep('initial');
-    } else {
-      setCurrentStep('initial');
-    }
+    changeStep('initial');
   };
 
   // Função para voltar à etapa anterior
   const goToPreviousStep = () => {
     setEmbedUrl(null);
     setIsFullScreen(false);
-    // No modo totem, garantir que não saia da tela de acesso rápido
-    if (isTotemMode()) {
-      setCurrentStep(previousStep === 'initial' ? 'initial' : previousStep);
-    } else {
-      setCurrentStep(previousStep);
-    }
+    changeStep(previousStep === 'initial' ? 'initial' : previousStep);
   };
 
   // Função para ir ao menu inicial
   const goToInitialMenu = () => {
     setEmbedUrl(null);
     setIsFullScreen(false);
-    setCurrentStep('initial');
+    changeStep('initial');
   };
 
   // Função para abrir URL no embed em tela cheia
@@ -269,7 +330,7 @@ const AcessoRapido = () => {
       const { url, ...actionDetails } = option; // eslint-disable-line @typescript-eslint/no-unused-vars
       setVisitorAction(actionDetails);
       setPreviousStep(currentStep); 
-      setCurrentStep('visitorAddressSelection');
+      changeStep('visitorAddressSelection');
     } else if (option.url.startsWith('/')) {
       // Navegação interna (ex: /reservar-sala)
       if (isTotemMode()) {
@@ -310,7 +371,7 @@ const AcessoRapido = () => {
       showOptionSelection(completeAction);
     } else {
       // Caso inesperado, apenas voltar para a seleção de visitante ou inicial
-      setCurrentStep('visitor');
+      changeStep('visitor');
     }
   };
 
@@ -560,7 +621,7 @@ const AcessoRapido = () => {
             <header className="flex items-center mb-10">
               <button 
                 onClick={() => {
-                  setCurrentStep('visitor');
+                  changeStep('visitor');
                   setVisitorAction(null);
                   setSelectedUnitUrl(null);
                 }} 
@@ -665,7 +726,7 @@ const AcessoRapido = () => {
               <div className="flex flex-col items-center h-full justify-center">
                 {/* Seleção de Idiomas - ACIMA do título */}
                 <div className="mb-8">
-                  <div className="flex justify-center space-x-6">
+                  <div className="flex justify-center space-x-4 md:space-x-6">
                     <button
                       onClick={() => setLanguage('pt')}
                       className={`flex flex-col items-center transition-all duration-300 transform hover:scale-110 ${
@@ -673,9 +734,9 @@ const AcessoRapido = () => {
                       }`}
                       title="Português (Brasil)"
                     >
-                      <div className={`w-20 h-20 rounded-full overflow-hidden transition-all duration-300 ${
+                      <div className={`w-14 h-14 md:w-20 md:h-20 rounded-full overflow-hidden transition-all duration-300 ${
                         language === 'pt' 
-                          ? 'ring-4 ring-blue-400 shadow-lg' 
+                          ? 'ring-2 md:ring-4 ring-blue-400 shadow-lg' 
                           : 'hover:shadow-md'
                       }`}>
                         <img 
@@ -684,7 +745,7 @@ const AcessoRapido = () => {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className={`text-xs mt-2 font-medium transition-colors duration-300 ${
+                      <span className={`text-xs mt-1 md:mt-2 font-medium transition-colors duration-300 ${
                         language === 'pt' ? 'text-blue-300' : 'text-gray-300'
                       }`}>
                         PT-BR
@@ -697,9 +758,9 @@ const AcessoRapido = () => {
                       }`}
                       title="English"
                     >
-                      <div className={`w-20 h-20 rounded-full overflow-hidden transition-all duration-300 ${
+                      <div className={`w-14 h-14 md:w-20 md:h-20 rounded-full overflow-hidden transition-all duration-300 ${
                         language === 'en' 
-                          ? 'ring-4 ring-blue-400 shadow-lg' 
+                          ? 'ring-2 md:ring-4 ring-blue-400 shadow-lg' 
                           : 'hover:shadow-md'
                       }`}>
                         <img 
@@ -708,7 +769,7 @@ const AcessoRapido = () => {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className={`text-xs mt-2 font-medium transition-colors duration-300 ${
+                      <span className={`text-xs mt-1 md:mt-2 font-medium transition-colors duration-300 ${
                         language === 'en' ? 'text-blue-300' : 'text-gray-300'
                       }`}>
                         EN
@@ -721,9 +782,9 @@ const AcessoRapido = () => {
                       }`}
                       title="Español"
                     >
-                      <div className={`w-20 h-20 rounded-full overflow-hidden transition-all duration-300 ${
+                      <div className={`w-14 h-14 md:w-20 md:h-20 rounded-full overflow-hidden transition-all duration-300 ${
                         language === 'es' 
-                          ? 'ring-4 ring-blue-400 shadow-lg' 
+                          ? 'ring-2 md:ring-4 ring-blue-400 shadow-lg' 
                           : 'hover:shadow-md'
                       }`}>
                         <img 
@@ -732,7 +793,7 @@ const AcessoRapido = () => {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className={`text-xs mt-2 font-medium transition-colors duration-300 ${
+                      <span className={`text-xs mt-1 md:mt-2 font-medium transition-colors duration-300 ${
                         language === 'es' ? 'text-blue-300' : 'text-gray-300'
                       }`}>
                         ES
@@ -745,9 +806,9 @@ const AcessoRapido = () => {
                       }`}
                       title="Français"
                     >
-                      <div className={`w-20 h-20 rounded-full overflow-hidden transition-all duration-300 ${
+                      <div className={`w-14 h-14 md:w-20 md:h-20 rounded-full overflow-hidden transition-all duration-300 ${
                         language === 'fr' 
-                          ? 'ring-4 ring-blue-400 shadow-lg' 
+                          ? 'ring-2 md:ring-4 ring-blue-400 shadow-lg' 
                           : 'hover:shadow-md'
                       }`}>
                         <img 
@@ -756,7 +817,7 @@ const AcessoRapido = () => {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className={`text-xs mt-2 font-medium transition-colors duration-300 ${
+                      <span className={`text-xs mt-1 md:mt-2 font-medium transition-colors duration-300 ${
                         language === 'fr' ? 'text-blue-300' : 'text-gray-300'
                       }`}>
                         FR
@@ -776,7 +837,7 @@ const AcessoRapido = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full max-w-3xl">
                   <button
-                    onClick={() => setCurrentStep('client')} 
+                    onClick={() => changeStep('client')} 
                     className="flex flex-col items-center justify-center p-5 rounded-xl glass-card hover-glow shadow-xl transition-all duration-500 transform hover:scale-105 hover:border-blue-400 border border-gray-700"
                   >
                     <div className="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white mb-3 shadow-lg transition-all duration-500 transform hover:rotate-6">
@@ -787,7 +848,7 @@ const AcessoRapido = () => {
                   </button>
 
                   <button
-                    onClick={() => setCurrentStep('visitor')} 
+                    onClick={() => changeStep('visitor')} 
                     className="flex flex-col items-center justify-center p-5 rounded-xl glass-card hover-glow shadow-xl transition-all duration-500 transform hover:scale-105 hover:border-indigo-400 border border-gray-700"
                   >
                     <div className="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-white mb-3 shadow-lg transition-all duration-500 transform hover:rotate-6">
@@ -888,48 +949,72 @@ const AcessoRapido = () => {
         </footer>
       )}
 
-      {/* Modal de Aviso de Inatividade */}
+      {/* Modal de Aviso de Inatividade - Centro da Tela */}
       {showInactivityWarning && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-gradient-to-br from-yellow-600 to-orange-600 rounded-2xl p-8 max-w-md w-full text-white border-2 border-yellow-400 shadow-2xl animate-pulse">
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="glass-card rounded-2xl p-8 max-w-lg w-full text-white border border-gray-600 shadow-2xl">
             <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="relative">
-                  <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <AlertCircle className="h-10 w-10 text-yellow-200" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
+              {/* Mensagem */}
+              <p className="text-2xl mb-6 font-medium text-blue-200">
+                Sistema sem atividade detectada
+              </p>
+              
+              {/* Contador GRANDE */}
+              <div className="flex justify-center mb-8">
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center border-4 border-blue-300 shadow-xl">
+                  <span className="text-6xl font-bold text-white">
                     {warningCountdown}
-                  </div>
+                  </span>
                 </div>
               </div>
               
-              <h3 className="text-2xl font-bold mb-4">⚠️ Atenção!</h3>
-              <p className="text-lg mb-6">
-                Por inatividade, o sistema voltará à tela inicial em{' '}
-                <span className="font-bold text-yellow-200 text-xl">
-                  {warningCountdown} segundo{warningCountdown !== 1 ? 's' : ''}
-                </span>
-              </p>
-              
-              <button 
-                onClick={() => {
-                  console.log("[DEBUG] Usuário clicou em 'Continuar Usando'");
-                  
-                  // Limpa countdown
-                  if (countdownIntervalRef.current) {
-                    clearInterval(countdownIntervalRef.current);
-                    countdownIntervalRef.current = null;
-                  }
-                  
-                  setShowInactivityWarning(false);
-                  setWarningCountdown(5);
-                  resetTimer(); // Reset do timer de inatividade
-                }}
-                className="w-full px-6 py-4 bg-white text-orange-600 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
-              >
-                {t('continue_using')}
-              </button>
+              {/* Botões de Ação */}
+              <div className="grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => {
+                    console.log("[DEBUG] Usuário clicou em 'Continuar Usando'");
+                    
+                    // Limpa countdown
+                    if (countdownIntervalRef.current) {
+                      clearInterval(countdownIntervalRef.current);
+                      countdownIntervalRef.current = null;
+                    }
+                    
+                    setShowInactivityWarning(false);
+                    setWarningCountdown(10);
+                    resetTimer(); // Reset do timer de inatividade
+                  }}
+                  className="px-6 py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-500 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                >
+                  Continuar
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    console.log("[DEBUG] Usuário clicou em 'Reiniciar Agora'");
+                    
+                    // Limpa countdown
+                    if (countdownIntervalRef.current) {
+                      clearInterval(countdownIntervalRef.current);
+                      countdownIntervalRef.current = null;
+                    }
+                    
+                    // Reset completo imediato
+                    setShowInactivityWarning(false);
+                    setWarningCountdown(10);
+                    setShowingQrDetails(null);
+                    setShowingOptionSelection(null);
+                    setEmbedUrl('');
+                    setVisitorAction(null);
+                    setSelectedUnitUrl(null);
+                    setGeolocationCancelled(false);
+                    changeStep('initial');
+                  }}
+                  className="px-6 py-4 bg-gray-700 text-white rounded-xl font-bold text-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                >
+                  Reiniciar
+                </button>
+              </div>
             </div>
           </div>
         </div>
