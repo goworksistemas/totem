@@ -261,30 +261,11 @@ const AcessoRapido = () => {
   // Função para abrir URL no embed em tela cheia
   const openInEmbed = (url: string) => {
     setPreviousStep(currentStep);
-    
-    // Adicionar parâmetro de idioma ao URL se possível
-    let finalUrl = url;
-    
-    // Mapeamento de idiomas para códigos do Google Translate
-    const languageMap: Record<string, string> = {
-      'pt': 'pt',
-      'en': 'en',
-      'es': 'es',
-      'fr': 'fr'
-    };
-    
-    // Se o idioma não for português, usar Google Translate para traduzir a página
-    if (language !== 'pt') {
-      const targetLang = languageMap[language] || 'en';
-      finalUrl = `https://translate.google.com/translate?sl=auto&tl=${targetLang}&u=${encodeURIComponent(url)}`;
-      console.log('[DEBUG] 🌍 Traduzindo página para:', targetLang, '| URL traduzida:', finalUrl);
-    } else {
-      console.log('[DEBUG] 🌍 Idioma PT - mantendo URL original:', url);
-    }
-    
-    setEmbedUrl(finalUrl);
+    setEmbedUrl(url);
     // Ativar modo tela cheia automaticamente
     setIsFullScreen(true);
+    
+    // Teclado virtual removido
   };
 
   // Função para alternar entre modo normal e tela cheia (não utilizada atualmente)
