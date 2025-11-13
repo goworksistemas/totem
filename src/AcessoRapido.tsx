@@ -105,8 +105,8 @@ const AcessoRapido = () => {
   console.log("[DEBUG] Timeout enabled?", isTimeoutEnabled, "| isTotemMode:", isTotemMode(), "| currentStep:", currentStep);
   
   const { resetTimer } = useInactivityTimeout({
-    timeout: 40000, // 40 segundos total
-    warningTime: 10000, // Aviso nos últimos 10 segundos
+    timeout: 90000, // 90 segundos total (1 minuto e 30 segundos)
+    warningTime: 15000, // Aviso nos últimos 15 segundos
     enabled: isTimeoutEnabled, // Ativo fora da tela inicial
     onWarning: () => {
       console.log("[DEBUG] 🚨 CALLBACK onWarning EXECUTADO - 10 segundos restantes");
