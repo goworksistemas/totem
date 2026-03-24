@@ -357,7 +357,7 @@ ls dist/
 
 **Reserva de Salas**:
 - **Para CLIENTES**: `https://networkgo.com.br/login` (Reservar sala de reunião)
-- **Para VISITANTES**: `https://networkgo.gowork.com.br/reservar-sala` (Alugar sala de reunião por hora)
+- **Para VISITANTES**: `https://networkgo.com.br/reservar-sala` (Alugar sala de reunião por hora)
 
 **Formulários HubSpot**: Configurados por unidade no arquivo `src/data/unitsData.ts`
 

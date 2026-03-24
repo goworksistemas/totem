@@ -53,7 +53,7 @@ export const createVisitorOptions = (t: (key: string) => string): OptionInfo[] =
   {
     title: t('rent_room'),
     description: t('rent_room_desc'),
-    url: "https://networkgo.gowork.com.br/reservar-sala",
+    url: "https://networkgo.com.br/reservar-sala",
     iconName: 'clock',
     bgColor: "bg-gradient-to-br from-amber-400 to-amber-600",
     textColor: "text-white"
@@ -122,7 +122,7 @@ export const visitorOptions: OptionInfo[] = [
   {
     title: "Alugar sala de reunião",
     description: "Por hora",
-    url: "https://networkgo.gowork.com.br/reservar-sala",
+    url: "https://networkgo.com.br/reservar-sala",
     iconName: 'clock',
     bgColor: "bg-gradient-to-br from-amber-400 to-amber-600",
     textColor: "text-white"
